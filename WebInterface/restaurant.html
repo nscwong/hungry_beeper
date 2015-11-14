@@ -1,0 +1,264 @@
+<!doctype html>
+<head>
+  <meta charset="utf-8">
+
+  <title>My Parse App</title>
+  <meta name="description" content="My Parse App">
+  <meta name="viewport" content="width=device-width">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+  <script type="text/javascript" src="http://www.parsecdn.com/js/parse-latest.js"></script>
+</head>
+
+<body>
+  
+  <div id="main">
+    <h1>Welcome to Hungy Beeper Restaurant Management</h1>
+
+    <FORM NAME="address">
+    <INPUT TYPE="hidden" NAME="url">
+    </FORM>
+
+    <h2> Restaurant Information </h2>
+    <p id="resTable"> </p> 
+
+    <h3> Queue </h3>
+    <p id="queueTable"> </p>
+    Note: Queue Table is refreshed every 10 seconds. 
+
+    <br><br>
+    <h2> Add Customer to Wait Queue </h2>
+
+    <form id="addQueueForm" method="link" action="<script>window.location</script>">
+      CustomerId: <input type="text" name="customerId" size="14"> <br>
+      Head Count: <input type="text" name="headCount" size="1"> <br>
+      Wait Time: <input type="text" name="waitTime" value="15" size="1"> <br>
+
+      
+    </form>
+    <button onclick="addToQueueButton()">Add Customer </button>
+
+
+
+    <br> <br><br>
+    <h2> Restaurant Lookup </h2>
+    <form id="loginForm" method="link" action="restaurant.html">
+      Restaurant ID: <input type="text" name="resId"> </br>
+      <input type="submit" value="Submit">
+    </form>
+
+  </div>
+
+  <!-- JQuery -->
+  <script type="text/javascript" src ="/jquery-1.11.3.min.js"></script>
+
+  <script type="text/javascript">
+  Parse.initialize("4eehWGP5Kyy5b3OeFevhoD0hzIbsgv6Uik7eoExA", "AmGopvrWEdcNIoak9BdZlrWpzWjf2lCJHYBA9i1N");
+
+  var locate = window.location;
+  document.address.url.value = locate;
+  var url = document.address.url.value;
+
+  function getLastVar(str)
+  {
+    var point = str.lastIndexOf("=");
+    return (str.substring(point+1, str.length));
+  }
+
+  var restaurantId = getLastVar(url);
+
+  displayRestaurant(restaurantId);
+
+  var resQueue;
+  findResQueue(restaurantId, function(newQueue){ resQueue = newQueue; 
+    displayQueue(resQueue);
+  });
+
+
+
+  function displayRestaurant(resId) {
+    console.log("Attempting to Display Restaurant");
+    console.log("id:" + restaurantId);
+
+    var query = new Parse.Query("Restaurant");
+    restaurantId = resId;
+
+    query.get(restaurantId, {
+      success: function(object) {
+
+      // object is an instance of Parse.Object.
+        console.log("Found Restaurant");
+        var name = object.escape("name");
+        var address = object.escape("address");
+
+        text = "";
+        text += "<table><tr>";
+        text += "<tr><td></td><td><b>" + name + "</b></td>";
+        text += "<tr><td>ID</td><td>" + restaurantId +"</td></tr>";
+        text += "<tr><td>Address</td><td>" + address +"</td></tr>";
+
+        text += "</table>"
+
+        document.getElementById("resTable").innerHTML = text;
+
+      },
+
+      error: function(object, error) {
+      // error is an instance of Parse.Error.
+      text = "Restaurant not found!";
+        document.getElementById("resTable").innerHTML = text;
+       console.log("failed");
+      }
+    });    
+  };
+
+  function findResQueue(resId, callback){
+    var query = new Parse.Query("Queue");
+    query.equalTo("restaurantId", resId);
+    query.find({
+      success: function(results) {
+        //console.log("Successfully retrieved " + results.length + " queues.");
+        // Do something with the returned Parse.Object values
+        var queue = [];
+
+        for (var i = 0; i < results.length; i++) {
+          var object = results[i];
+          var cur = {};
+          cur['queueId'] = object.id;
+          cur['restaurantId'] = object.get('restaurantId');
+          cur['customerId'] = object.get('customerId');
+          cur['customerName'] = object.get('customerName');
+          cur['headCount'] = object.get('headCount');
+          cur['waitTime'] = object.get('waitTime');
+          cur['tableReady'] = object.get('tableReady');
+          //console.log(cur);
+          queue.push(cur);
+
+          callback(queue);
+        }
+      },
+      error: function(error) {
+        console.log("Error: " + error.code + " " + error.message);
+      }
+    });
+  };
+
+
+  function displayQueue(queue){
+    var text = "<table border='2'>"
+    text += "<tr>"
+    text += "<td>Position</td>"
+    text += "<td>Customer Name</td>"; // check to name eventually
+    text += "<td>Head Count</td>";
+    text += "<td>Wait Time</td>";
+    text += "<td>Table Ready</td>";
+    text += "<td>Table is </td>";
+    text += "</tr>"
+
+    // need code to convert customer ID to name.
+    //console.log("queueToDisplay");
+    //console.log(queue);
+
+    for (var i = 0; i < queue.length; i++)
+    {
+      var cur = queue[i];
+      var t = "";
+      t += "<td>" + (i+1) + "</td>";
+      t += "<td>" + cur['customerName'] + "</td>";
+      t += "<td>" + cur['headCount'] + "</td>";
+      t += "<td>" + cur['waitTime'] + "</td>";
+      t += "<td>" + cur['tableReady'] + "</td>";
+      t += '<td> <button onclick=setTableReady("' + cur['queueId'] + '",true)> Ready </button>'
+      + '<button onclick=setTableReady("' + cur['queueId'] + '",false)> Not Ready </button></td>';
+
+      text += "<tr>" + t + "</tr>";
+    }
+
+    text += "</table>";
+    //console.log(text);
+
+    document.getElementById("queueTable").innerHTML = text;
+  };
+
+
+  function getCustomerName(customerId, callback){
+    var query = new Parse.Query("User");
+
+    query.get(customerId, {
+      success: function(object) {
+
+      // object is an instance of Parse.Object.
+        //console.log("Found Customer");
+        var name = object.escape("name");
+        //console.log(name);
+        callback(name);
+      },
+
+      error: function(object, error) {
+      // error is an instance of Parse.Error.
+      console.log("Customer Not Found");
+
+      }
+    }); 
+  }
+
+  function addToQueue(restaurantId, customerId, headCount, waitTime){
+      getCustomerName(customerId, function(name){
+        console.log("Adding:" + name);
+        var newQueue = new Parse.Object("Queue");
+        newQueue.set("restaurantId", restaurantId);
+        newQueue.set("customerId", customerId);
+        newQueue.set("headCount", headCount);
+        newQueue.set("waitTime", waitTime);
+        newQueue.set("customerName", name);
+        newQueue.set("tableReady", false);
+        newQueue.save();
+      });
+    };
+
+  function addToQueueButton()
+  {
+    var form = document.getElementById('addQueueForm');
+    var customerId = form.elements['customerId'].value;
+    var headCount = Number(form.elements['headCount'].value);
+    var waitTime = Number(form.elements['waitTime'].value);
+
+    addToQueue(restaurantId, customerId, headCount, waitTime);
+  }
+
+  //addToQueue("QCzivaFPvQ", "9ByRh6cchy", 4, 20);
+  function refresh(){
+    location.reload();
+  }
+
+
+  setInterval(function(){
+    findResQueue(restaurantId, function(newQueue){ resQueue = newQueue; 
+    displayQueue(resQueue);
+  });
+  }, 5000);
+
+
+  function setTableReady(queueId, val){
+    var query = new Parse.Query("Queue");
+
+    query.get(queueId, {
+      success: function(queue) {
+        queue.set("tableReady", val);
+        queue.save();
+      },
+
+      error: function(object, error) {
+      // error is an instance of Parse.Error.
+      text = "Queue!";
+        console.log("failed");
+      }
+    });    
+  };
+
+  </script>
+
+</body>
+
+</html>

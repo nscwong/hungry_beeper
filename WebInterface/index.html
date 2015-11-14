@@ -1,0 +1,84 @@
+<!doctype html>
+<head>
+  <meta charset="utf-8">
+
+  <title>My Parse App</title>
+  <meta name="description" content="My Parse App">
+  <meta name="viewport" content="width=device-width">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+  <script type="text/javascript" src="http://www.parsecdn.com/js/parse-latest.js"></script>
+</head>
+
+<body>
+  
+  <div id="main">
+    <h1>Welcome to Hungy Beeper Restaurant Management</h1>
+    <h3> Enter your restaurant's ID to access restaurant info: </h3>
+    <form id="loginForm" method="link" action="restaurant.html">
+      Restaurant ID: <input type="text" name="resId"> 
+      E.g. QCzivaFPvQ  </br>
+      <!-- Password: <input type="password" name="resPass"> </br> -->
+      <input type="submit" value="Submit">
+    </form>
+
+    <!--<button onclick="login()"> Display </button> -->
+
+    <p id="demo"> </p>
+  </div>
+
+<!--
+  <script type="text/javascript">
+  Parse.initialize("4eehWGP5Kyy5b3OeFevhoD0hzIbsgv6Uik7eoExA", "AmGopvrWEdcNIoak9BdZlrWpzWjf2lCJHYBA9i1N");
+
+    function login() {
+      console.log("Display");
+      var x = document.getElementById("loginForm");
+      var text = "";
+      var id = x.elements.namedItem("resId").value;
+      //text += id;
+
+      var query = new Parse.Query("Restaurant");
+      var restaurantId = id;
+
+      console.log(restaurantId);
+
+      query.get(restaurantId, {
+        success: function(object) {
+
+        // object is an instance of Parse.Object.
+          console.log("Found Restaurant");
+          var name = object.escape("name");
+          var address = object.escape("address");
+          console.log(object.escape("name"));
+
+          text = "";
+          text += "<table border='2' cellspacing='10'><tr>";
+          text += "<tr><td></td><td><b>" + name + "</b></td>";
+          text += "<tr><td>ID</td><td>" + restaurantId +"</td></tr>";
+          text += "<tr><td>Address</td><td>" + address +"</td></tr>";
+
+          text += "</table>"
+
+          document.getElementById("demo").innerHTML = text;
+
+        },
+
+        error: function(object, error) {
+        // error is an instance of Parse.Error.
+        text = "Restaurant not found!";
+          document.getElementById("demo").innerHTML = text;
+         console.log("failed");
+        }
+      });
+  
+      
+    }
+
+
+  </script>
+  -->
+</body>
+
+</html>

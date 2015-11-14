@@ -1,0 +1,127 @@
+<!doctype html>
+<head>
+  <meta charset="utf-8">
+
+  <title>My Parse App</title>
+  <meta name="description" content="My Parse App">
+  <meta name="viewport" content="width=device-width">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/styles.css">
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+  <script type="text/javascript" src="http://www.parsecdn.com/js/parse-latest.js"></script>
+</head>
+
+<body>
+  
+  <div id="main">
+    <h1>You're ready to use Parse!</h1>
+
+    <p>Read the documentation and start building your JavaScript app:</p>
+
+    <ul>
+      <li><a href="https://www.parse.com/docs/js_guide">Parse JavaScript Guide</a></li>
+      <li><a href="https://www.parse.com/docs/js">Parse JavaScript API Documentation</a></li>
+    </ul>
+
+      <button onclick="CreateRestaurant()">Create Restaurant </button>
+
+    <div style="display:none" class="error">
+      Looks like there was a problem saving the test object. Make sure you've set your application ID and javascript key correctly in the call to <code>Parse.initialize</code> in this file.
+    </div>
+
+    <div style="display:none" class="success">
+      <p>We've also just created your first object using the following code:</p>
+      
+        <code>
+            var Restaurant = Parse.Object.extend("Restaurant");<br/>
+            var Restaurant = new Restaurant();<br/>
+            Restaurant.save({Name: "Janice's Bakery", Location:"Gayley"}
+        </code>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    Parse.initialize("4eehWGP5Kyy5b3OeFevhoD0hzIbsgv6Uik7eoExA", "AmGopvrWEdcNIoak9BdZlrWpzWjf2lCJHYBA9i1N");
+
+    /*
+    var Restaurant = Parse.Object.extend("Restaurant");
+    var Restaurant = new Restaurant();
+      Restaurant.save({Name: "Janice's Bakery", Location:"Gayley"}, {
+      success: function(object) {
+        $(".success").show();
+      },
+      error: function(model, error) {
+        $(".error").show();
+      }
+
+    })
+      */
+      ;
+
+
+  </script>
+
+  <script type="text/javascript">
+
+    var query = new Parse.Query("Restaurant");
+  
+    var restaurantId = "Qgu64GWyA2";
+
+    query.get(restaurantId, {
+       success: function(object) {
+    // object is an instance of Parse.Object.
+      console.log("Found Restaurant");
+        console.log(object.escape("Name"));
+      },
+
+
+      error: function(object, error) {
+      // error is an instance of Parse.Error.
+       console.log("failed");
+      }
+    });
+
+    var queue = {};
+    var party = {};
+
+    var query2 = new Parse.Query("Queue");
+    query2.equalTo("restaurantId", restaurantId);
+    query2.find({
+       success: function(results) {
+    // object is an instance of Parse.Object.
+        console.log("Found Person");
+
+        
+        for (var i = 0; i < results.length; i++)
+        {
+          console.log(results[i].escape("customerId"));
+
+          party = {};
+          party["customerId"] = results[0].escape("customerId");
+          party["tableReady"] = results[i].escape("tableReady");
+          party["waitTime"] = results[i].escape("waitTime");
+          party["headCount"] = results[i].escape("headCount");
+        
+          console.log(party);
+
+          queue += party;
+        }
+      },
+
+    error: function(object, error) {
+    // error is an instance of Parse.Error.
+      console.log("failed");
+    }
+    });
+
+    for (var i = 0; i < queue.length; i++)
+    {
+        cur = queue[i];
+        console.log(party);
+    }
+
+  </script>
+
+</body>
+
+</html>
