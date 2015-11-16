@@ -28,17 +28,31 @@
     Note: Queue Table is refreshed every 10 seconds. 
 
     <br><br>
+    <h3> Requests </h3>
+    <p id="requestTable"> </p>
+
+
+    <br><br>
+    <h2> Add Customer to Request Queue </h2>
+
+    <form id="addRequestForm">
+      CustomerId: <input type="text" name="customerId" value="61C5I68fFi" size="10">  Example: 61C5I68fFi (Charley Chen)<br>
+      Head Count: <input type="number" name="headCount" value="4" style="width: 2em"> <br>
+    </form>
+    <button onclick="addRequestButton()">Add Request</button>
+
+    <!--
+    <br><br>
     <h2> Add Customer to Wait Queue </h2>
 
     <form id="addQueueForm" method="link" action="<script>window.location</script>">
       CustomerId: <input type="text" name="customerId" size="14"> <br>
-      Head Count: <input type="text" name="headCount" size="1"> <br>
-      Wait Time: <input type="text" name="waitTime" value="15" size="1"> <br>
-
+      Head Count: <input type="number" name="headCount" style="width: 2em"> <br>
+      Wait Time: <input type="number" name="waitTime" value="15" style="width: 2em"> <br>
       
     </form>
     <button onclick="addToQueueButton()">Add Customer </button>
-
+    -->
 
 
     <br> <br><br>
@@ -75,6 +89,9 @@
     displayQueue(resQueue);
   });
 
+  findRequest(restaurantId, function(request){
+    displayRequest(request);
+  });
 
 
   function displayRestaurant(resId) {
@@ -108,7 +125,7 @@
       // error is an instance of Parse.Error.
       text = "Restaurant not found!";
         document.getElementById("resTable").innerHTML = text;
-       console.log("failed");
+        console.log("failed");
       }
     });    
   };
@@ -134,51 +151,60 @@
           cur['tableReady'] = object.get('tableReady');
           //console.log(cur);
           queue.push(cur);
-
-          callback(queue);
         }
+
+        callback(queue);
       },
       error: function(error) {
         console.log("Error: " + error.code + " " + error.message);
+
       }
     });
   };
 
 
   function displayQueue(queue){
-    var text = "<table border='2'>"
-    text += "<tr>"
-    text += "<td>Position</td>"
-    text += "<td>Customer Name</td>"; // check to name eventually
-    text += "<td>Head Count</td>";
-    text += "<td>Wait Time</td>";
-    text += "<td>Table Ready</td>";
-    text += "<td>Table is </td>";
-    text += "</tr>"
-
-    // need code to convert customer ID to name.
-    //console.log("queueToDisplay");
-    //console.log(queue);
-
-    for (var i = 0; i < queue.length; i++)
+    if (queue.length == 0)
     {
-      var cur = queue[i];
-      var t = "";
-      t += "<td>" + (i+1) + "</td>";
-      t += "<td>" + cur['customerName'] + "</td>";
-      t += "<td>" + cur['headCount'] + "</td>";
-      t += "<td>" + cur['waitTime'] + "</td>";
-      t += "<td>" + cur['tableReady'] + "</td>";
-      t += '<td> <button onclick=setTableReady("' + cur['queueId'] + '",true)> Ready </button>'
-      + '<button onclick=setTableReady("' + cur['queueId'] + '",false)> Not Ready </button></td>';
-
-      text += "<tr>" + t + "</tr>";
+      document.getElementById("queueTable").innerHTML = '<i>"No Customers in Queue"</i>';
     }
+    else {
+      var text = "<table>"
+      text += "<tr>"
+      text += "<td>Position</td>"
+      text += "<td>Customer Name</td>"; // check to name eventually
+      text += "<td>Head Count</td>";
+      text += "<td>Wait Time</td>";
+      text += "<td>Table Ready</td>";
+      text += "<td>Table is </td>";
+      text += "<td align='center'>X</td>"
+      text += "</tr>"
 
-    text += "</table>";
-    //console.log(text);
+      // need code to convert customer ID to name.
+      //console.log("queueToDisplay");
+      //console.log(queue);
 
-    document.getElementById("queueTable").innerHTML = text;
+      for (var i = 0; i < queue.length; i++)
+      {
+        var cur = queue[i];
+        var t = "";
+        t += "<td>" + (i+1) + "</td>";
+        t += "<td>" + cur['customerName'] + "</td>";
+        t += "<td>" + cur['headCount'] + "</td>";
+        t += "<td>" + cur['waitTime'] + "</td>";
+        t += "<td>" + cur['tableReady'] + "</td>";
+        t += '<td> <button onclick=setTableReady("' + cur['queueId'] + '",true)> Ready </button>'
+        + '<button onclick=setTableReady("' + cur['queueId'] + '",false)> Not Ready </button></td>';
+        t += '<td> <button onclick=deleteQueue("' + cur['queueId'] + '")> X </button>';
+
+        text += "<tr>" + t + "</tr>";
+      }
+
+      text += "</table>";
+      //console.log(text);
+
+      document.getElementById("queueTable").innerHTML = text;
+    }
   };
 
 
@@ -232,12 +258,91 @@
     location.reload();
   }
 
+  function findRequest(resId, callback){
+    var query = new Parse.Query("QueueRequest");
+    query.equalTo("restaurantId", resId);
+    query.find({
+      success: function(results) {
+        //console.log("Successfully retrieved " + results.length + " queues.");
+        // Do something with the returned Parse.Object values
+        var request = [];
+
+        for (var i = 0; i < results.length; i++) {
+          var object = results[i];
+          var cur = {};
+          cur['id'] = object.id;
+          cur['restaurantId'] = object.get('restaurantId');
+          cur['customerId'] = object.get('customerId');
+          cur['customerName'] = object.get('customerName');
+          cur['headCount'] = object.get('headCount');
+          //cur['waitTime'] = object.get('waitTime');
+          //cur['tableReady'] = object.get('tableReady');
+          //console.log(cur);
+          request.push(cur);
+        }
+        callback(request);
+      },
+      error: function(error) {
+        console.log("Error: " + error.code + " " + error.message);
+      }
+    });
+  };
+
+  function displayRequest(queue){
+    if (queue.length == 0)
+    {
+      document.getElementById("requestTable").innerHTML = '<i>"No Requests Currently"</i>';
+    }
+
+    else 
+    {
+      var text = "<table>"
+      text += "<tr>"
+      text += "<td>Position</td>"
+      text += "<td>Customer Name</td>"; // check to name eventually
+      text += "<td>Head Count</td>";
+      text += "<td>Wait Time</td>";
+      text += "<td>Approve</td>";
+      text += "</tr>"
+
+      // need code to convert customer ID to name.
+      //console.log("queueToDisplay");
+      //console.log(queue);
+
+      for (var i = 0; i < queue.length; i++)
+      {
+        var cur = queue[i];
+        var t = "";
+        t += "<td>" + (i+1) + "</td>";
+        t += "<td>" + cur['customerName'] + "</td>";
+        t += "<td>" + cur['headCount'] + "</td>";
+        t += "<td>";
+        t += "<form id='requestForm'><input type='number' name='waitTime' value='15' style='width: 2em'></form>" 
+        t += "</td>";
+        
+        t += '<td> <button onclick=moveToQueue("' + cur['id'] + '")> Approve </button>';
+        t += '<button onclick=deleteRequest("' + cur['id'] + '")> Delete </button></td>';
+
+        text += "<tr>" + t + "</tr>";
+      }
+
+      text += "</table>";
+      //console.log(text);
+
+      document.getElementById("requestTable").innerHTML = text;
+    }
+  };
+
+
 
   setInterval(function(){
-    findResQueue(restaurantId, function(newQueue){ resQueue = newQueue; 
-    displayQueue(resQueue);
-  });
-  }, 5000);
+    findResQueue(restaurantId, function(queue){ 
+      displayQueue(queue);
+    });
+    findRequest(restaurantId, function(request){
+      displayRequest(request);
+    })
+    }, 5000);
 
 
   function setTableReady(queueId, val){
@@ -256,6 +361,96 @@
       }
     });    
   };
+
+  function moveToQueue(requestId)
+  {
+    var form = document.getElementById('requestForm');
+    var waitTime = Number(form.elements['waitTime'].value);
+
+    var query = new Parse.Query("QueueRequest");
+    query.get(requestId, {
+      success: function(request) {
+        var restaurantId = request.get('restaurantId');
+        var customerId = request.get('customerId');
+        var headCount = request.get('headCount');
+        var name = request.get('customerName');
+
+        var newQueue = new Parse.Object("Queue");
+        newQueue.set("restaurantId", restaurantId);
+        newQueue.set("customerId", customerId);
+        newQueue.set("headCount", headCount);
+        newQueue.set("waitTime", waitTime);
+        newQueue.set("customerName", name);
+        newQueue.set("tableReady", false);
+        newQueue.save();
+
+        request.destroy();
+      },
+
+      error: function(object, error) {
+      // error is an instance of Parse.Error.
+      text = "Queue!";
+        console.log("failed");
+      }
+    });
+  }
+
+  function deleteRequest(requestId)
+  {
+    var query = new Parse.Query("QueueRequest");
+    query.get(requestId, {
+      success: function(request) {
+        var name = request.get('customerName');
+        request.destroy();
+        console.log("Request for " + name + " is deleted!");
+      },
+
+      error: function(object, error) {
+      // error is an instance of Parse.Error.
+        console.log("Deleting Request failed");
+      }
+    });
+  }
+
+  function addToRequest(restaurantId, customerId, headCount){
+
+      getCustomerName(customerId, function(name){
+        console.log("Adding:" + name +"'s Request!");
+        var newQueue = new Parse.Object("QueueRequest");
+        newQueue.set("restaurantId", restaurantId);
+        newQueue.set("customerId", customerId);
+        newQueue.set("headCount", headCount);
+        newQueue.set("customerName", name);
+        newQueue.save();
+      });
+    };
+
+  function addRequestButton()
+  {
+    var form = document.getElementById('addRequestForm');
+    var customerId = form.elements['customerId'].value;
+    var headCount = Number(form.elements['headCount'].value);
+
+    addToRequest(restaurantId, customerId, headCount);
+  }
+
+
+  function deleteQueue(queueId)
+  {
+    var query = new Parse.Query("Queue");
+    query.get(queueId, {
+      success: function(result) {
+        var name = result.get('customerName');
+        result.destroy();
+        console.log("Queue for " + name + " is deleted!");
+      },
+
+      error: function(object, error) {
+      // error is an instance of Parse.Error.
+        console.log("Deleting Queue failed");
+      }
+    });
+  }
 
   </script>
 
