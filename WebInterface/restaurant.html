@@ -5,8 +5,9 @@
   <title>My Parse App</title>
   <meta name="description" content="My Parse App">
   <meta name="viewport" content="width=device-width">
-  <link rel="stylesheet" href="css/reset.css">
-  <link rel="stylesheet" href="css/styles.css">
+  <!--<link rel="stylesheet" href="css/reset.css">-->
+  <!--<link rel="stylesheet" href="css/styles.css">-->
+  <link rel="stylesheet" href="css/bootstrap.css">
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
   <script type="text/javascript" src="http://www.parsecdn.com/js/parse-latest.js"></script>
 </head>
@@ -14,8 +15,14 @@
 <body>
   
   <div id="main">
-    <h1>Welcome to Hungy Beeper Restaurant Management</h1>
-
+  <div class="jumbotron">
+  <div class="container">
+      <p>Welcome to the...</p>
+      <h1>Hungry Beeper <small>Restaurant Management</small></h1>
+  </div>
+  </div>
+  
+  <div class="container">
     <FORM NAME="address">
     <INPUT TYPE="hidden" NAME="url">
     </FORM>
@@ -34,12 +41,18 @@
 
     <br><br>
     <h2> Add Customer to Request Queue </h2>
-
+    
     <form id="addRequestForm">
-      CustomerId: <input type="text" name="customerId" value="61C5I68fFi" size="10">  Example: 61C5I68fFi (Charley Chen)<br>
-      Head Count: <input type="number" name="headCount" value="4" style="width: 2em"> <br>
+      <div class="form-group">
+        <label for="customerId">Customer ID: </label>
+        <input type="text" name="customerId" value="61C5I68fFi" placeholder="Example: 61C5I68fFi (Charley Chen)">
+      </div>
+      <div class="form-group">
+        <label for="headCount">Head Count: </label>
+        <input type="number" name="headCount" value="4" placeholder="Example: 4">
+      </div>
     </form>
-    <button onclick="addRequestButton()">Add Request</button>
+    <button class="btn btn-primary" onclick="addRequestButton()">Add Request</button>
 
     <!--
     <br><br>
@@ -54,13 +67,17 @@
     <button onclick="addToQueueButton()">Add Customer </button>
     -->
 
-
-    <br> <br><br>
+    <br><br><br>
     <h2> Restaurant Lookup </h2>
-    <form id="loginForm" method="link" action="restaurant.html">
-      Restaurant ID: <input type="text" name="resId"> </br>
-      <input type="submit" value="Submit">
+    <form id="loginForm" class="form-inline" method="link" action="restaurant.html">
+      <div class="form-group">
+        <label for="loginFormID">Restaurant ID</label>
+        <input type="text" class="form-control" id="loginFormID" name="resId" placeholder="e.g. QCzivaFPvQ">
+      </div>
+      <button type="submit" class="btn btn-primary">Submit</button>
     </form>
+    
+    <br><br>
 
   </div>
 
@@ -110,7 +127,7 @@
         var address = object.escape("address");
 
         text = "";
-        text += "<table><tr>";
+        text += "<table class='table table-striped'><tr>";
         text += "<tr><td></td><td><b>" + name + "</b></td>";
         text += "<tr><td>ID</td><td>" + restaurantId +"</td></tr>";
         text += "<tr><td>Address</td><td>" + address +"</td></tr>";
@@ -169,21 +186,24 @@
       document.getElementById("queueTable").innerHTML = '<i>"No Customers in Queue"</i>';
     }
     else {
-      var text = "<table>"
-      text += "<tr>"
-      text += "<td>Position</td>"
-      text += "<td>Customer Name</td>"; // check to name eventually
-      text += "<td>Head Count</td>";
-      text += "<td>Wait Time</td>";
-      text += "<td>Table Ready</td>";
-      text += "<td>Table is </td>";
-      text += "<td align='center'>X</td>"
-      text += "</tr>"
+      var text = "<table class='table table-striped'>";
+      text += "<thead>";
+      text += "<tr>";
+      text += "<th>Position</th>";
+      text += "<th>Customer Name</th>"; // check to name eventually
+      text += "<th>Head Count</th>";
+      text += "<th>Wait Time</th>";
+      text += "<th>Table Ready?</th>";
+      text += "<th>Table is</th>";
+      text += "<th>Remove</th>";
+      text += "</tr>";
+      text += "</thead>";
 
       // need code to convert customer ID to name.
       //console.log("queueToDisplay");
       //console.log(queue);
 
+      text += "<tbody>";
       for (var i = 0; i < queue.length; i++)
       {
         var cur = queue[i];
@@ -193,12 +213,13 @@
         t += "<td>" + cur['headCount'] + "</td>";
         t += "<td>" + cur['waitTime'] + "</td>";
         t += "<td>" + cur['tableReady'] + "</td>";
-        t += '<td> <button onclick=setTableReady("' + cur['queueId'] + '",true)> Ready </button>'
-        + '<button onclick=setTableReady("' + cur['queueId'] + '",false)> Not Ready </button></td>';
-        t += '<td> <button onclick=deleteQueue("' + cur['queueId'] + '")> X </button>';
+        t += '<td> <button onclick=setTableReady("' + cur['queueId'] + '",true) class="btn btn-success"> Ready </button>'
+        + ' <button onclick=setTableReady("' + cur['queueId'] + '",false) class="btn btn-warning"> Not Ready </button></td>';
+        t += '<td> <button onclick=deleteQueue("' + cur['queueId'] + '") class="btn btn-danger"> X </button>';
 
         text += "<tr>" + t + "</tr>";
       }
+      text += "</tbody>";
 
       text += "</table>";
       //console.log(text);
@@ -296,19 +317,22 @@
 
     else 
     {
-      var text = "<table>"
-      text += "<tr>"
-      text += "<td>Position</td>"
-      text += "<td>Customer Name</td>"; // check to name eventually
-      text += "<td>Head Count</td>";
-      text += "<td>Wait Time</td>";
-      text += "<td>Approve</td>";
-      text += "</tr>"
+      var text = "<table class='table table-striped'>";
+      text += "<thead>";
+      text += "<tr>";
+      text += "<th>Position</th>";
+      text += "<th>Customer Name</th>"; // check to name eventually
+      text += "<th>Head Count</th>";
+      text += "<th>Wait Time</th>";
+      text += "<th>Approve</th>";
+      text += "</tr>";
+      text += "</thead>";
 
       // need code to convert customer ID to name.
       //console.log("queueToDisplay");
       //console.log(queue);
 
+      text += "<tbody>";
       for (var i = 0; i < queue.length; i++)
       {
         var cur = queue[i];
@@ -320,11 +344,12 @@
         t += "<form id='requestForm'><input type='number' name='waitTime' value='15' style='width: 2em'></form>" 
         t += "</td>";
         
-        t += '<td> <button onclick=moveToQueue("' + cur['id'] + '")> Approve </button>';
-        t += '<button onclick=deleteRequest("' + cur['id'] + '")> Delete </button></td>';
+        t += '<td> <button onclick=moveToQueue("' + cur['id'] + '") class="btn btn-success"> Approve </button>';
+        t += ' <button onclick=deleteRequest("' + cur['id'] + '") class="btn btn-danger"> Delete </button></td>';
 
         text += "<tr>" + t + "</tr>";
       }
+      text += "</tbody>";
 
       text += "</table>";
       //console.log(text);
@@ -454,6 +479,6 @@
 
   </script>
 
-</body>
+  </div></body>
 
 </html>

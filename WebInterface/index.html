@@ -5,8 +5,9 @@
   <title>My Parse App</title>
   <meta name="description" content="My Parse App">
   <meta name="viewport" content="width=device-width">
-  <link rel="stylesheet" href="css/reset.css">
-  <link rel="stylesheet" href="css/styles.css">
+  <!--<link rel="stylesheet" href="css/reset.css">-->
+  <!--<link rel="stylesheet" href="css/styles.css">-->
+  <link rel="stylesheet" href="css/bootstrap.css">
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
   <script type="text/javascript" src="http://www.parsecdn.com/js/parse-latest.js"></script>
 </head>
@@ -14,18 +15,27 @@
 <body>
   
   <div id="main">
-    <h1>Welcome to Hungy Beeper Restaurant Management</h1>
+  <div class="jumbotron">
+  <div class="container">
+      <p>Welcome to the...</p>
+      <h1>Hungry Beeper <small>Restaurant Management</small></h1>
+  </div>
+  </div>
+  <div class="container">
     <h3> Enter your restaurant's ID to access restaurant info: </h3>
-    <form id="loginForm" method="link" action="restaurant.html">
-      Restaurant ID: <input type="text" name="resId" value="QCzivaFPvQ"> 
-      E.g. QCzivaFPvQ</br>
+    <form id="loginForm" class="form-inline" method="link" action="restaurant.html">
+      <div class="form-group">
+        <label for="loginFormID">Restaurant ID</label>
+        <input type="text" class="form-control" id="loginFormID" name="resId" value="QCzivaFPvQ" placeholder="e.g. QCzivaFPvQ">
+      </div>
       <!-- Password: <input type="password" name="resPass"> </br> -->
-      <input type="submit" value="Submit">
+      <button type="submit" class="btn btn-primary">Submit</button>
     </form>
 
     <!--<button onclick="login()"> Display </button> -->
 
     <p id="demo"> </p>
+  </div>
   </div>
 
 <!--
@@ -54,7 +64,7 @@
           console.log(object.escape("name"));
 
           text = "";
-          text += "<table border='2' cellspacing='10'><tr>";
+          text += "<table class='table' border='2' cellspacing='10'><tr>";
           text += "<tr><td></td><td><b>" + name + "</b></td>";
           text += "<tr><td>ID</td><td>" + restaurantId +"</td></tr>";
           text += "<tr><td>Address</td><td>" + address +"</td></tr>";
