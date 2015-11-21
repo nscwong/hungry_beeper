@@ -27,21 +27,25 @@
     <INPUT TYPE="hidden" NAME="url">
     </FORM>
 
-    <h2> Restaurant Information </h2>
+    <h2 class='text-center'> Restaurant Information </h2>
     <p id="resTable"> </p> 
-
-    <h3> Queue </h3>
+    
+    <br><br>
+    <h2 class='text-center'> Queue </h2>
     <p id="queueTable"> </p>
     Note: Queue Table is refreshed every 10 seconds. 
 
     <br><br>
-    <h3> Requests </h3>
+    <h2 class='text-center'> Requests </h2>
     <p id="requestTable"> </p>
 
 
     <br><br>
-    <h2> Add Customer to Request Queue </h2>
     
+    <div class="row">
+    
+    <div class="col-md-6">
+    <h2> Add Customer to Request Queue </h2>
     <form id="addRequestForm">
       <div class="form-group">
         <label for="customerId">Customer ID: </label>
@@ -53,6 +57,7 @@
       </div>
     </form>
     <button class="btn btn-primary" onclick="addRequestButton()">Add Request</button>
+    </div>
 
     <!--
     <br><br>
@@ -66,8 +71,10 @@
     </form>
     <button onclick="addToQueueButton()">Add Customer </button>
     -->
+    
+    <div class="col-md-1"></div>
 
-    <br><br><br>
+    <div class="col-md-5">
     <h2> Restaurant Lookup </h2>
     <form id="loginForm" class="form-inline" method="link" action="restaurant.html">
       <div class="form-group">
@@ -76,10 +83,11 @@
       </div>
       <button type="submit" class="btn btn-primary">Submit</button>
     </form>
+    </div>
     
-    <br><br>
-
   </div>
+  
+  <br><br><br>
 
   <script type="text/javascript">
   Parse.initialize("4eehWGP5Kyy5b3OeFevhoD0hzIbsgv6Uik7eoExA", "AmGopvrWEdcNIoak9BdZlrWpzWjf2lCJHYBA9i1N");
@@ -124,12 +132,7 @@
         var address = object.escape("address");
 
         text = "";
-        text += "<table class='table table-striped'><tr>";
-        text += "<tr><td></td><td><b>" + name + "</b></td>";
-        text += "<tr><td>ID</td><td>" + restaurantId +"</td></tr>";
-        text += "<tr><td>Address</td><td>" + address +"</td></tr>";
-
-        text += "</table>"
+        text += "<h3 class='text-center'>" + name + "<br><small>" + address + "</small></h3>";
 
         document.getElementById("resTable").innerHTML = text;
 
@@ -143,6 +146,12 @@
       }
     });    
   };
+  
+  function pad(n, width, z) {
+    z = z || '0';
+    n = n + '';
+    return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+  }
 
   function findResQueue(resId, callback){
     var query = new Parse.Query("Queue");
@@ -176,11 +185,11 @@
           waitTime = targetTime - curTime;
           var minutesTotal = Math.floor((waitTime/1000)/60);
 
-
           if (waitTime < 0)
           {
             hours = 0;
             minutes = 0;
+            minutesTotal = 0;
           }
           else 
           {
@@ -188,12 +197,10 @@
             minutes = minutesTotal%60 +1;
           }
           
-          if (hours == 0)
-            cur['waitTime'] = minutes + "";
-          else if (minutes > 9)
-            cur['waitTime'] = hours + "h:" + minutes;
+          if (hours == 0 && minutes == 0)
+            cur['waitTime'] = "HUNGRY";
           else
-            cur['waitTime'] = hours + "h:0" + minutes;
+            cur['waitTime'] = hours + "h " + pad(minutes, 2) + "m";
 
 
           //console.log(waitTime);
