@@ -2,7 +2,7 @@
 <head>
   <meta charset="utf-8">
 
-  <title>My Parse App</title>
+  <title>Hungry Beeper</title>
   <meta name="description" content="My Parse App">
   <meta name="viewport" content="width=device-width">
   <!--<link rel="stylesheet" href="css/reset.css">-->
@@ -80,9 +80,6 @@
     <br><br>
 
   </div>
-
-  <!-- JQuery -->
-  <script type="text/javascript" src ="/jquery-1.11.3.min.js"></script>
 
   <script type="text/javascript">
   Parse.initialize("4eehWGP5Kyy5b3OeFevhoD0hzIbsgv6Uik7eoExA", "AmGopvrWEdcNIoak9BdZlrWpzWjf2lCJHYBA9i1N");
@@ -177,7 +174,7 @@
           if (waitTime < 0)
             waitTime = 0;
           else 
-            waitTime = waitTime.getMinutes();
+            waitTime = waitTime.getMinutes()+1;
 
 
           console.log(waitTime);
