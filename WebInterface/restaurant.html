@@ -92,6 +92,7 @@
   <script type="text/javascript">
   Parse.initialize("4eehWGP5Kyy5b3OeFevhoD0hzIbsgv6Uik7eoExA", "AmGopvrWEdcNIoak9BdZlrWpzWjf2lCJHYBA9i1N");
 
+  // Acquire restauranId from the url and set restaurantId as a global varaible. 
   var locate = window.location;
   document.address.url.value = locate;
   var url = document.address.url.value;
@@ -101,9 +102,10 @@
     var point = str.lastIndexOf("=");
     return (str.substring(point+1, str.length));
   }
-
   var restaurantId = getLastVar(url);
 
+
+  // display info on restaurant
   displayRestaurant(restaurantId);
 
   var resQueue;
@@ -115,7 +117,7 @@
     displayRequest(request);
   });
 
-
+  // Display restaurant given restaurantId
   function displayRestaurant(resId) {
     console.log("Attempting to Display Restaurant");
     console.log("id:" + restaurantId);
@@ -147,12 +149,14 @@
     });    
   };
   
+  // Pad function!
   function pad(n, width, z) {
     z = z || '0';
     n = n + '';
     return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
   }
 
+  // Returns the restaurant Queue 
   function findResQueue(resId, callback){
     var query = new Parse.Query("Queue");
     query.equalTo("restaurantId", resId);
@@ -204,7 +208,7 @@
 
 
           //console.log(waitTime);
-          object.set("waitTime", minutesTotal);
+          object.set("waitTime", minutesTotal+1);
           object.save();
 
 
@@ -221,7 +225,7 @@
     });
   };
 
-
+  // Display Queue given Queue
   function displayQueue(queue){
     if (queue.length == 0)
     {
@@ -236,7 +240,7 @@
       text += "<th>Head Count</th>";
       text += "<th>Wait Time</th>";
       text += "<th>Table Ready?</th>";
-      text += "<th>Checked In</th>";
+      text += "<th>In Line</th>";
       text += "<th>Table is</th>";
       text += "<th>Remove</th>";
       text += "</tr>";
@@ -257,7 +261,7 @@
         t += "<td>" + cur['headCount'] + "</td>";
         t += "<td>" + cur['waitTime'] + "</td>";
         t += "<td>" + boolToString(cur['tableReady']) + "</td>";
-        t += "<td>" + boolToString(!cur['valid']) + "</td>";
+        t += "<td>" + boolToString(cur['valid']) + "</td>";
 
         t += '<td> <button onclick=setTableReady("' + cur['queueId'] + '",true) class="btn btn-success"> Ready </button>'
         + ' <button onclick=setTableReady("' + cur['queueId'] + '",false) class="btn btn-warning"> Not Ready </button></td>';
@@ -275,6 +279,7 @@
     }
   };
 
+  // convert from true/false to Yes/No 
   function boolToString(val)
   {
     if (val)          
@@ -283,7 +288,7 @@
       return "No";
   }
 
-
+  // get a customerName given customerID
   function getCustomerName(customerId, callback){
     var query = new Parse.Query("User");
 
@@ -305,7 +310,9 @@
     }); 
   }
 
-  function addToQueue(restaurantId, customerId, headCount, waitTime){
+  // Given restaurantId, customerId, headcount and waitTime, add to queue. 
+  function addToQueue(restaurantId, customerId, headCount, waitTime)
+  {
       getCustomerName(customerId, function(name){
         console.log("Adding:" + name);
         var newQueue = new Parse.Object("Queue");
@@ -317,7 +324,7 @@
         newQueue.set("tableReady", false);
         newQueue.save();
       });
-    };
+  };
 
   function addToQueueButton()
   {
@@ -329,11 +336,11 @@
     addToQueue(restaurantId, customerId, headCount, waitTime);
   }
 
-  //addToQueue("QCzivaFPvQ", "9ByRh6cchy", 4, 20);
   function refresh(){
     location.reload();
   }
 
+  // Finds requests given restaurant ID. 
   function findRequest(resId, callback){
     var query = new Parse.Query("QueueRequest");
     query.equalTo("restaurantId", resId);
@@ -364,6 +371,7 @@
     });
   };
 
+  // Display Request Table given queue
   function displayRequest(queue){
     if (queue.length == 0)
     {
@@ -414,7 +422,7 @@
   };
 
 
-
+  // Automatically refreshes every 5 seconds. 
   setInterval(function(){
     findResQueue(restaurantId, function(queue){ 
       displayQueue(queue);
@@ -425,13 +433,22 @@
     }, 5000);
 
 
+  // Set table as ready in queue table. Sends nofication if ready
   function setTableReady(queueId, val){
     var query = new Parse.Query("Queue");
 
     query.get(queueId, {
       success: function(queue) {
+        // Notify customer that table is ready
+        console.log(queueId);
+        console.log(queue.get("customerId"));
+        if (val) 
+          sendReady(queue.get("customerId"));
+
+        // Set the value in table. 
         queue.set("tableReady", val);
         queue.save();
+
       },
 
       error: function(object, error) {
@@ -442,6 +459,7 @@
     });    
   };
 
+  // Move a request into Queue. Sets waitTime and other parameters
   function moveToQueue(requestId)
   {
     var form = document.getElementById('requestForm');
@@ -471,11 +489,10 @@
         targetTime.setMinutes( curTime.getMinutes() + waitTime);
         console.log("Target Time:" + targetTime);
 
-
         newQueue.set("targetTime", targetTime);
         newQueue.save();
 
-        request.destroy();
+        request.destroy(); // deletes request after being moved to Queue. 
       },
 
       error: function(object, error) {
@@ -486,6 +503,7 @@
     });
   }
 
+  // Delete Request given a requestId
   function deleteRequest(requestId)
   {
     var query = new Parse.Query("QueueRequest");
@@ -503,6 +521,7 @@
     });
   }
 
+  // Add a new customer to request list
   function addToRequest(restaurantId, customerId, headCount){
 
       getCustomerName(customerId, function(name){
@@ -516,6 +535,7 @@
       });
     };
 
+  // Add Request
   function addRequestButton()
   {
     var form = document.getElementById('addRequestForm');
@@ -525,7 +545,7 @@
     addToRequest(restaurantId, customerId, headCount);
   }
 
-
+  // Deletes a row from queue given queueId
   function deleteQueue(queueId)
   {
     var query = new Parse.Query("Queue");
@@ -542,6 +562,57 @@
       }
     });
   }
+
+
+  // Cleans up 's from string to display properly
+  function sanitize(str)
+  {
+    return str.replace("&#x27;s", "'s");
+  }
+
+  // Notifies customer that the restaurant is ready 
+  function sendReady(customerId)
+  {
+    var resId = restaurantId; // get global variable restaurantId
+
+    // get channel and target user
+    var query = new Parse.Query(Parse.Installation);
+    query.equalTo('userId', customerId);
+
+    // get reasturant name. 
+    var queryRes = new Parse.Query("Restaurant");
+    queryRes.get(resId, {
+        success: function(object) {
+        // get reasturant name. 
+          var name = object.escape("name");
+          name = sanitize(name);
+
+          console.log("Restaurant:" + name + " notifying " + customerId);
+
+          // Send notification
+          Parse.Push.send({
+          channels: [ resId ],
+          data: {
+            alert: "Your Table at " + name + " is Ready!"
+          }
+          }, {
+            success: function() {
+              // Push was successful
+            },
+            error: function(error) {
+              // Handle error
+            }
+          });
+
+        },
+
+        error: function(object, error) {
+        // error is an instance of Parse.Error.
+        console.log("Can't find restaurant Name")
+        }
+      });    
+
+  };
 
 
 
