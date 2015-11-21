@@ -426,14 +426,19 @@
     query.get(queueId, {
       success: function(queue) {
         // Notify customer that table is ready
-        console.log(queueId);
-        console.log(queue.get("customerId"));
         if (val) 
           sendReady(queue.get("customerId"));
 
         // Set the value in table. 
         queue.set("tableReady", val);
-        queue.save();
+        queue.save(null, {
+          success: function(queue) {
+            displayQueue(restaurantId);
+          },
+          error: function(error) {
+            console.log("Saving Failed");
+          }
+        });
 
       },
 
@@ -489,7 +494,7 @@
             displayRequest(restaurantId);
             displayQueue(restaurantId);
           },
-          error: function(gameScore, error) {
+          error: function(error) {
             console.log("Saving Failed");
           }
         });
@@ -515,7 +520,7 @@
           success: function(request) {
             displayRequest(restaurantId);
           },
-          error: function(gameScore, error) {
+          error: function(error) {
             console.log("Destroy " + requestId + " Failed");
           }
         });
@@ -545,7 +550,7 @@
             displayRequest(restaurantId);
             displayQueue(restaurantId);
           },
-          error: function(gameScore, error) {
+          error: function(error) {
             console.log("Saving Failed");
           }
         });
@@ -611,7 +616,7 @@
           var name = object.escape("name");
           name = sanitize(name);
 
-          console.log("Restaurant:" + name + " notifying " + customerId);
+          console.log("Restaurant: " + name + " notifying " + customerId);
 
           // Send notification
           Parse.Push.send({
