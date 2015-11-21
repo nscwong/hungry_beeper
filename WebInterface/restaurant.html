@@ -164,8 +164,30 @@
           cur['customerId'] = object.get('customerId');
           cur['customerName'] = object.get('customerName');
           cur['headCount'] = object.get('headCount');
-          cur['waitTime'] = object.get('waitTime');
           cur['tableReady'] = object.get('tableReady');
+          cur['valid'] = object.get('valid');
+          //cur['waitTime'] = object.get('waitTime');
+          var waitTime;
+          var curTime = new Date();
+          var targetTime = object.get('targetTime');
+          waitTime = new Date(targetTime - curTime);
+          console.log("t " + targetTime);
+          console.log("c " + curTime);
+
+          if (waitTime < 0)
+            waitTime = 0;
+          else 
+            waitTime = waitTime.getMinutes();
+
+
+          console.log(waitTime);
+  
+          cur['waitTime'] = waitTime;
+
+          object.set("waitTime", waitTime);
+          object.save();
+
+
           //console.log(cur);
           queue.push(cur);
         }
@@ -194,6 +216,7 @@
       text += "<th>Head Count</th>";
       text += "<th>Wait Time</th>";
       text += "<th>Table Ready?</th>";
+      text += "<th>Checked In</th>";
       text += "<th>Table is</th>";
       text += "<th>Remove</th>";
       text += "</tr>";
@@ -208,13 +231,17 @@
       {
         var cur = queue[i];
         var t = "";
+
         t += "<td>" + (i+1) + "</td>";
         t += "<td>" + cur['customerName'] + "</td>";
         t += "<td>" + cur['headCount'] + "</td>";
         t += "<td>" + cur['waitTime'] + "</td>";
-        t += "<td>" + cur['tableReady'] + "</td>";
+        t += "<td>" + boolToString(cur['tableReady']) + "</td>";
+        t += "<td>" + boolToString(!cur['valid']) + "</td>";
+
         t += '<td> <button onclick=setTableReady("' + cur['queueId'] + '",true) class="btn btn-success"> Ready </button>'
         + ' <button onclick=setTableReady("' + cur['queueId'] + '",false) class="btn btn-warning"> Not Ready </button></td>';
+
         t += '<td> <button onclick=deleteQueue("' + cur['queueId'] + '") class="btn btn-danger"> X </button>';
 
         text += "<tr>" + t + "</tr>";
@@ -227,6 +254,14 @@
       document.getElementById("queueTable").innerHTML = text;
     }
   };
+
+  function boolToString(val)
+  {
+    if (val)          
+      return "Yes";
+    else
+      return "No";
+  }
 
 
   function getCustomerName(customerId, callback){
@@ -341,7 +376,7 @@
         t += "<td>" + cur['customerName'] + "</td>";
         t += "<td>" + cur['headCount'] + "</td>";
         t += "<td>";
-        t += "<form id='requestForm'><input type='number' name='waitTime' value='15' style='width: 2em'></form>" 
+        t += "<form id='requestForm'><input type='number' name='waitTime' value='15' style='width: 3em'></form>" 
         t += "</td>";
         
         t += '<td> <button onclick=moveToQueue("' + cur['id'] + '") class="btn btn-success"> Approve </button>';
@@ -407,6 +442,16 @@
         newQueue.set("waitTime", waitTime);
         newQueue.set("customerName", name);
         newQueue.set("tableReady", false);
+
+        var curTime = new Date();
+        console.log("Cur Time:" + curTime);
+
+        var targetTime = new Date(curTime);
+        targetTime.setMinutes( curTime.getMinutes() + waitTime);
+        console.log("Target Time:" + targetTime);
+
+
+        newQueue.set("targetTime", targetTime);
         newQueue.save();
 
         request.destroy();
@@ -440,12 +485,13 @@
   function addToRequest(restaurantId, customerId, headCount){
 
       getCustomerName(customerId, function(name){
-        console.log("Adding:" + name +"'s Request!");
+        console.log("Adding: " + name +"'s Request!");
         var newQueue = new Parse.Object("QueueRequest");
         newQueue.set("restaurantId", restaurantId);
         newQueue.set("customerId", customerId);
         newQueue.set("headCount", headCount);
         newQueue.set("customerName", name);
+        newQueue.set("valid", true);
         newQueue.save();
       });
     };
@@ -476,6 +522,8 @@
       }
     });
   }
+
+
 
   </script>
 
