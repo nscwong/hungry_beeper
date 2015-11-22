@@ -183,7 +183,7 @@
           var minutes;
           var hours;
           waitTime = targetTime - curTime;
-          var minutesTotal = Math.floor((waitTime/1000)/60);
+          var minutesTotal = Math.floor((waitTime/1000)/60)+1;
 
           if (waitTime < 0)
           {
@@ -194,7 +194,7 @@
           else 
           {
             hours = Math.floor(minutesTotal/60)
-            minutes = minutesTotal%60 +1;
+            minutes = minutesTotal%60;
           }
           
           if (hours == 0 && minutes == 0)
@@ -202,9 +202,11 @@
           else
             cur['waitTime'] = hours + "h " + pad(minutes, 2) + "m";
 
+          // for notification
+          cur['minutes'] = minutesTotal;
 
           //console.log(waitTime);
-          object.set("waitTime", minutesTotal+1);
+          object.set("waitTime", minutesTotal);
           object.save();
 
 
@@ -228,6 +230,7 @@
           text += "<th>Wait Time</th>";
           text += "<th>Table Ready?</th>";
           text += "<th>In Line</th>";
+          text += "<th>Send Minutes</th>";
           text += "<th>Table is</th>";
           text += "<th>Remove</th>";
           text += "</tr>";
@@ -249,6 +252,8 @@
             t += "<td>" + cur['waitTime'] + "</td>";
             t += "<td>" + boolToString(cur['tableReady']) + "</td>";
             t += "<td>" + boolToString(cur['valid']) + "</td>";
+
+            t += '<td> <button onclick=sendMinutes("' + cur['id'] + '",' + cur['minutes'] + ') class="btn btn-success"> Notify </button>';
 
             t += '<td> <button onclick=setTableReady("' + cur['queueId'] + '",true) class="btn btn-success"> Ready </button>'
             + ' <button onclick=setTableReady("' + cur['queueId'] + '",false) class="btn btn-warning"> Not Ready </button></td>';
@@ -623,6 +628,49 @@
           channels: [ resId ],
           data: {
             alert: "Your Table at " + name + " is Ready!"
+          }
+          }, {
+            success: function() {
+              // Push was successful
+            },
+            error: function(error) {
+              // Handle error
+            }
+          });
+
+        },
+
+        error: function(object, error) {
+        // error is an instance of Parse.Error.
+        console.log("Can't find restaurant Name")
+        }
+      });    
+
+  };
+
+  function sendMinutes(customerId, minRemain)
+  {
+    var resId = restaurantId; // get global variable restaurantId
+
+    // get channel and target user
+    var query = new Parse.Query(Parse.Installation);
+    query.equalTo('userId', customerId);
+
+    // get reasturant name. 
+    var queryRes = new Parse.Query("Restaurant");
+    queryRes.get(resId, {
+        success: function(object) {
+        // get reasturant name. 
+          var name = object.escape("name");
+          name = sanitize(name);
+
+          console.log("Restaurant: " + name + " notifying " + customerId);
+
+          // Send notification
+          Parse.Push.send({
+          channels: [ resId ],
+          data: {
+            alert: minRemain + " minutes remaining for " + name + "!"
           }
           }, {
             success: function() {
