@@ -419,9 +419,13 @@
 
   // Automatically refreshes every 5 seconds. 
   setInterval(function(){
-    displayQueue(restaurantId);
     displayRequest(restaurantId);
-    }, 5000);
+  }, 5000);
+
+  // Refresh Queue at a slower rate
+  setInterval(function(){
+    displayQueue(restaurantId);
+  }, 20000);
 
 
   // Set table as ready in queue table. Sends nofication if ready

@@ -1,0 +1,67 @@
+<!docttype html>
+<htm>
+<head>
+<title>Push Test </title>
+</head>
+
+<body>
+Push Test!
+<p id="what"> </p>
+
+  <script type="text/javascript" src="http://www.parsecdn.com/js/parse-latest.js"></script>
+<script type="text/javascript">
+  Parse.initialize("4eehWGP5Kyy5b3OeFevhoD0hzIbsgv6Uik7eoExA", "AmGopvrWEdcNIoak9BdZlrWpzWjf2lCJHYBA9i1N");
+
+
+sendReady("VzbvvQhaf7", "9ByRh6cchy");
+
+
+function sanitize(str)
+{
+	return str.replace("&#x27;s", "'s'");
+}
+
+function sendReady(resId, customerId)
+{
+	resId = restaurantId;
+
+	var query = new Parse.Query(Parse.Installation);
+	query.equalTo('userId', customerId);
+
+	var queryRes = new Parse.Query("Restaurant");
+
+	queryRes.get(resId, {
+      success: function(object) {
+      // object is an instance of Parse.Object.
+        var name = object.escape("name");
+        name = sanitize(name);
+        document.getElementById("what").innerHTML = name;
+
+        console.log("Restaurant:" + name + " notifying " + customerId);
+	      Parse.Push.send({
+		  channels: [ resId ],
+		  data: {
+		    alert: "Your Table at " + name + " is Ready!"
+		  }
+			}, {
+			  success: function() {
+			    // Push was successful
+			  },
+			  error: function(error) {
+			    // Handle error
+			  }
+			});
+
+      },
+
+      error: function(object, error) {
+      // error is an instance of Parse.Error.
+      console.log("Can't find restaurant Name")
+      }
+    });    
+
+};
+</script>
+
+</body>
+</html>
