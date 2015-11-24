@@ -497,6 +497,7 @@
 
         newQueue.save(null, {
           success: function(newQueue) {
+            sendRequestApproval(customerId, waitTime);
             displayRequest(restaurantId);
             displayQueue(restaurantId);
           },
@@ -612,6 +613,7 @@
 
     // get channel and target user
     var query = new Parse.Query(Parse.Installation);
+    query.equalTo('channels', resId);
     query.equalTo('userId', customerId);
 
     // get reasturant name. 
@@ -626,10 +628,10 @@
 
           // Send notification
           Parse.Push.send({
-          channels: [ resId ],
-          data: {
-            alert: "Your Table at " + name + " is Ready!"
-          }
+            where:query, // set our Intalltion query
+            data: {
+              alert: "Your Table at " + name + " is Ready!"
+            }
           }, {
             success: function() {
               // Push was successful
@@ -655,13 +657,17 @@
 
     // get channel and target user
     var query = new Parse.Query(Parse.Installation);
+    query.equalTo('channels', resId);
     query.equalTo('userId', customerId);
+
+    //console.log(query);
 
     // get reasturant name. 
     var queryRes = new Parse.Query("Restaurant");
     queryRes.get(resId, {
         success: function(object) {
         // get reasturant name. 
+        //console.log(object);
           var name = object.escape("name");
           name = sanitize(name);
 
@@ -672,7 +678,7 @@
           {
             // send wait extende message
             Parse.Push.send({
-            channels: [ resId ],
+            where: query,
             data: {
               alert: "Sorry, wait time extended at " + name + "."
             }
@@ -686,7 +692,7 @@
           {
             // Normal notification of time
             Parse.Push.send({
-            channels: [ resId ],
+            where: query,
             data: {
               alert: minRemain + " minutes remaining for " + name + "!"
             }
@@ -710,7 +716,6 @@
 
   function addWaitTime5(queueId)
   {
-    console.log(queueId);
     var query = new Parse.Query("Queue");
     query.get(queueId, {
       success: function(queue) {
@@ -721,7 +726,7 @@
         var targetTime = queue.get('targetTime');
         targetTime.setMinutes( targetTime.getMinutes() + addedTime);
 
-        console.log(targetTime);
+        //console.log(targetTime);
 
         waitTime = targetTime - curTime;
         var minutesTotal = Math.floor((waitTime/1000)/60)+1;
@@ -752,6 +757,42 @@
 
   }
 
+  function sendRequestApproval(customerId, minRemain)
+  {
+    var resId = restaurantId; // get global variable restaurantId
+
+    // get channel and target user
+    var query = new Parse.Query(Parse.Installation);
+    query.equalTo('channels', resId);
+    query.equalTo('userId', customerId);
+
+    // get reasturant name. 
+    var queryRes = new Parse.Query("Restaurant");
+    queryRes.get(resId, {
+        success: function(object) {
+        // get reasturant name. 
+          var name = object.escape("name");
+          name = sanitize(name);
+
+          console.log("Restaurant: " + name + " notifying " + customerId);
+
+          // send message
+          Parse.Push.send({
+          where: query,
+          data: {
+            alert: "Request approved at " + name + "- WaitTime: " + minRemain + " minutes!"
+          }
+          }, {
+            success: function() {},
+            error: function(error) {}
+          });
+        },
+        error: function(object, error) {
+        // error is an instance of Parse.Error.
+        console.log("Can't find restaurant Name")
+        }
+      });    
+  }
 
 
   </script>
