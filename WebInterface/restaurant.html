@@ -6,9 +6,8 @@
   <title>Hungry Beeper</title>
   <meta name="description" content="My Parse App">
   <meta name="viewport" content="width=device-width">
-  <!--<link rel="stylesheet" href="css/reset.css">-->
-  <!--<link rel="stylesheet" href="css/styles.css">-->
   <link rel="stylesheet" href="css/bootstrap.css">
+  <link rel="stylesheet" href="css/bootstrap-theme.css">
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
   <script type="text/javascript" src="http://www.parsecdn.com/js/parse-latest.js"></script>
 </head>
@@ -257,7 +256,7 @@
             t += '<td> <button onclick=setTableReady("' + cur['queueId'] + '",true) class="btn btn-success"> Ready </button>'
             + ' <button onclick=setTableReady("' + cur['queueId'] + '",false) class="btn btn-warning"> Not Ready </button></td>';
 
-            t += '<td> <button onclick=addWaitTime5("' + cur['queueId'] + '") class="btn btn-warning"> +5 min </button>';
+            t += '<td> <button onclick=addWaitTime5("' + cur['queueId'] + '") class="btn btn-default"> +5 min </button>';
             t += '<td> <button onclick=sendMinutes("' + cur['customerId'] + '",' + cur['minutes'] + ') class="btn btn-primary"> Notify </button>';
 
             t += '<td> <button onclick=deleteQueue("' + cur['queueId'] + '") class="btn btn-danger"> X </button>';
