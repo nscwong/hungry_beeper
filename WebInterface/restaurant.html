@@ -230,8 +230,9 @@
           text += "<th>Wait Time</th>";
           text += "<th>Table Ready?</th>";
           text += "<th>In Line</th>";
-          text += "<th>Send Minutes</th>";
           text += "<th>Table is</th>";
+          text += "<th>Extend Wait</th>";
+          text += "<th>Send Minutes</th>";
           text += "<th>Remove</th>";
           text += "</tr>";
           text += "</thead>";
@@ -253,10 +254,11 @@
             t += "<td>" + boolToString(cur['tableReady']) + "</td>";
             t += "<td>" + boolToString(cur['valid']) + "</td>";
 
-            t += '<td> <button onclick=sendMinutes("' + cur['id'] + '",' + cur['minutes'] + ') class="btn btn-success"> Notify </button>';
-
             t += '<td> <button onclick=setTableReady("' + cur['queueId'] + '",true) class="btn btn-success"> Ready </button>'
             + ' <button onclick=setTableReady("' + cur['queueId'] + '",false) class="btn btn-warning"> Not Ready </button></td>';
+
+            t += '<td> <button onclick=addWaitTime5("' + cur['queueId'] + '") class="btn btn-warning"> +5 min </button>';
+            t += '<td> <button onclick=sendMinutes("' + cur['customerId'] + '",' + cur['minutes'] + ') class="btn btn-primary"> Notify </button>';
 
             t += '<td> <button onclick=deleteQueue("' + cur['queueId'] + '") class="btn btn-danger"> X </button>';
 
@@ -420,12 +422,8 @@
   // Automatically refreshes every 5 seconds. 
   setInterval(function(){
     displayRequest(restaurantId);
-  }, 5000);
-
-  // Refresh Queue at a slower rate
-  setInterval(function(){
     displayQueue(restaurantId);
-  }, 20000);
+  }, 5000);
 
 
   // Set table as ready in queue table. Sends nofication if ready
@@ -652,7 +650,7 @@
 
   };
 
-  function sendMinutes(customerId, minRemain)
+  function sendMinutes(customerId, minRemain, extend)
   {
     var resId = restaurantId; // get global variable restaurantId
 
@@ -670,20 +668,36 @@
 
           console.log("Restaurant: " + name + " notifying " + customerId);
 
-          // Send notification
-          Parse.Push.send({
-          channels: [ resId ],
-          data: {
-            alert: minRemain + " minutes remaining for " + name + "!"
-          }
-          }, {
-            success: function() {
-              // Push was successful
-            },
-            error: function(error) {
-              // Handle error
+          // send message
+          if (extend)
+          {
+            // send wait extende message
+            Parse.Push.send({
+            channels: [ resId ],
+            data: {
+              alert: "Sorry, wait time extended at " + name + "."
             }
-          });
+            }, {
+              success: function() {},
+              error: function(error) {}
+            });
+
+          }
+          else
+          {
+            // Normal notification of time
+            Parse.Push.send({
+            channels: [ resId ],
+            data: {
+              alert: minRemain + " minutes remaining for " + name + "!"
+            }
+            }, {
+              success: function() {},
+              error: function(error) {}
+            });
+
+
+          }
 
         },
 
@@ -694,6 +708,50 @@
       });    
 
   };
+
+  function addWaitTime5(queueId)
+  {
+    console.log(queueId);
+    var query = new Parse.Query("Queue");
+    query.get(queueId, {
+      success: function(queue) {
+        
+      
+        var addedTime = 5;
+        var curTime = new Date();
+        var targetTime = queue.get('targetTime');
+        targetTime.setMinutes( targetTime.getMinutes() + addedTime);
+
+        console.log(targetTime);
+
+        waitTime = targetTime - curTime;
+        var minutesTotal = Math.floor((waitTime/1000)/60)+1;
+
+        queue.set("targetTime", targetTime);
+        queue.set("waitTime", minutesTotal);
+
+        var customerId = queue.get('customerId');
+
+        queue.save(null, {
+          success: function(newQueue) {
+            displayQueue(restaurantId);
+            sendMinutes(customerId, minutesTotal, true);
+          },
+          error: function(error) {
+            console.log("Saving Failed");
+          }
+        });
+      },
+
+      error: function(object, error) {
+      // error is an instance of Parse.Error.
+
+        console.log("failed");
+      }
+    });
+
+
+  }
 
 
 
